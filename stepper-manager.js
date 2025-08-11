@@ -94,17 +94,26 @@ class StepperManager {
     /**
      * Intercepta los clics en los steppers nativos del navegador.
      * La estrategia es guardar el valor en 'mousedown' y compararlo en 'input'.
-     * Si el cambio es de +/- 1, se asume que fue un clic en el stepper y se aplica la lógica personalizada.
+     * Si el cambio es de +/- 1 (contemplando errores de punto flotante),
+     * se asume que fue un clic en el stepper y se aplica la lógica personalizada.
      */
     interceptNativeSteppers(input, field) {
         // Guardar el valor justo antes de que el stepper pueda cambiarlo
         input.addEventListener('mousedown', () => {
+            // Solo actualizamos si el foco ya está en el elemento,
+            // para no interferir con la carga inicial.
+            if (document.activeElement === input) {
+                field.lastValue = input.value;
+            }
+        });
+
+        // También en focus para asegurar que tenemos el valor antes del primer clic
+        input.addEventListener('focus', () => {
             field.lastValue = input.value;
         });
 
         // Escuchar el evento 'input', que se dispara con los clics del stepper
         input.addEventListener('input', () => {
-            // Prevenir bucles si ya estamos procesando este input
             if (this.processingInput.has(input.id)) {
                 return;
             }
@@ -113,28 +122,32 @@ class StepperManager {
             const newValue = parseFloat(input.value) || 0;
             const diff = newValue - oldValue;
 
-            // Si el cambio fue exactamente +1 o -1 y la unidad es 'cm', es un clic en el stepper
-            if (this.getCurrentUnit() === 'cm' && (diff === 1 || diff === -1)) {
+            // Comprobar si el cambio es aproximadamente +1 o -1.
+            // Math.round() maneja las imprecisiones del navegador con floats.
+            // (p.ej. 2 - 1.1 = 0.9, que se redondea a 1).
+            const roundedDiff = Math.round(diff);
+
+            if (this.getCurrentUnit() === 'cm' && (roundedDiff === 1 || roundedDiff === -1)) {
                 let correctedValue;
-                if (diff === 1) {
-                    // Incrementar 0.1 cm
+                if (roundedDiff === 1) { // Incremento
                     correctedValue = oldValue + 0.1;
-                } else {
-                    // Decrementar 0.1 cm
+                } else { // Decremento
                     correctedValue = oldValue - 0.1;
                 }
 
-                // Aplicar corrección
                 const finalValue = Math.max(0, Math.round(correctedValue * 10) / 10);
+
+                // Aplicar el valor corregido
                 input.value = finalValue;
 
                 // Actualizar el valor guardado para el próximo evento
                 field.lastValue = finalValue.toString();
 
-                // Disparar evento de input debounced para notificar a otros módulos del cambio
+                // Notificar a otros módulos del cambio
                 this.debounceInputEvent(input);
             } else {
-                // Si no es un clic de stepper, solo actualizar el último valor
+                // Si no es un clic de stepper que necesite corrección,
+                // simplemente actualizar el último valor conocido.
                 field.lastValue = input.value;
             }
         });
