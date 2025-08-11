@@ -100,8 +100,6 @@ class StepperManager {
     interceptNativeSteppers(input, field) {
         // Guardar el valor justo antes de que el stepper pueda cambiarlo
         input.addEventListener('mousedown', () => {
-            // Solo actualizamos si el foco ya está en el elemento,
-            // para no interferir con la carga inicial.
             if (document.activeElement === input) {
                 field.lastValue = input.value;
             }
@@ -112,19 +110,32 @@ class StepperManager {
             field.lastValue = input.value;
         });
 
-        // Escuchar el evento 'input', que se dispara con los clics del stepper
-        input.addEventListener('input', () => {
+        // Escuchar el evento 'input', que se dispara con clics del stepper y tipeo manual
+        input.addEventListener('input', (e) => {
             if (this.processingInput.has(input.id)) {
                 return;
             }
 
+            // Lista de inputTypes que indican tipeo manual.
+            const typingInputTypes = [
+                'insertText',
+                'deleteContentBackward',
+                'deleteContentForward',
+                'insertFromPaste'
+            ];
+
+            // Si el evento fue por tipeo, no aplicar la lógica de corrección del stepper.
+            if (typingInputTypes.includes(e.inputType)) {
+                field.lastValue = input.value;
+                return;
+            }
+
+            // Si el inputType no es de tipeo (p.ej. undefined, insertReplacementText),
+            // proceder con la lógica de corrección para el stepper.
             const oldValue = parseFloat(field.lastValue) || 0;
             const newValue = parseFloat(input.value) || 0;
             const diff = newValue - oldValue;
 
-            // Comprobar si el cambio es aproximadamente +1 o -1.
-            // Math.round() maneja las imprecisiones del navegador con floats.
-            // (p.ej. 2 - 1.1 = 0.9, que se redondea a 1).
             const roundedDiff = Math.round(diff);
 
             if (this.getCurrentUnit() === 'cm' && (roundedDiff === 1 || roundedDiff === -1)) {
@@ -137,17 +148,12 @@ class StepperManager {
 
                 const finalValue = Math.max(0, Math.round(correctedValue * 10) / 10);
 
-                // Aplicar el valor corregido
                 input.value = finalValue;
-
-                // Actualizar el valor guardado para el próximo evento
                 field.lastValue = finalValue.toString();
-
-                // Notificar a otros módulos del cambio
                 this.debounceInputEvent(input);
+
             } else {
-                // Si no es un clic de stepper que necesite corrección,
-                // simplemente actualizar el último valor conocido.
+                // Para otros casos (p.ej. el campo se vacía), actualizar el valor.
                 field.lastValue = input.value;
             }
         });
