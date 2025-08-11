@@ -140,12 +140,15 @@ class StepperManager {
 
             if (this.getCurrentUnit() === 'cm' && (roundedDiff === 1 || roundedDiff === -1)) {
                 let correctedValue;
+                // Usar aritmética basada en enteros para evitar errores de punto flotante.
+                // Se convierte a décimas de cm, se opera y se vuelve a cm.
                 if (roundedDiff === 1) { // Incremento
-                    correctedValue = oldValue + 0.1;
+                    correctedValue = (Math.round(oldValue * 10) + 1) / 10;
                 } else { // Decremento
-                    correctedValue = oldValue - 0.1;
+                    correctedValue = (Math.round(oldValue * 10) - 1) / 10;
                 }
 
+                // El redondeo final aquí es una doble seguridad.
                 const finalValue = Math.max(0, Math.round(correctedValue * 10) / 10);
 
                 input.value = finalValue;
