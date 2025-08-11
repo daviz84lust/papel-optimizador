@@ -59,7 +59,8 @@ class StepperManager {
      */
     setupFieldStepper(field) {
         const input = field.element;
-        
+        field.lastValue = input.value; // Almacenar valor inicial
+
         // Remover step attribute si existe para tomar control completo
         input.removeAttribute('step');
         
@@ -86,81 +87,57 @@ class StepperManager {
             }
         });
 
-        // Interceptar clics en los controles nativos del navegador (si existen)
-        this.interceptNativeSteppers(input);
+        // Interceptar clics en los controles nativos del navegador
+        this.interceptNativeSteppers(input, field);
     }
 
     /**
-     * Intercepta los controles nativos de stepper del navegador
+     * Intercepta los clics en los steppers nativos del navegador.
+     * La estrategia es guardar el valor en 'mousedown' y compararlo en 'input'.
+     * Si el cambio es de +/- 1, se asume que fue un clic en el stepper y se aplica la lógica personalizada.
      */
-    interceptNativeSteppers(input) {
-        // Crear un observer para detectar cambios de valor que no vienen del teclado
-        let lastValue = input.value;
-        
-        const observer = new MutationObserver(() => {
-            const currentValue = input.value;
-            if (currentValue !== lastValue) {
-                // El valor cambió, verificar si fue por stepper nativo
-                this.handleNativeStepperChange(input, lastValue, currentValue);
-                lastValue = currentValue;
+    interceptNativeSteppers(input, field) {
+        // Guardar el valor justo antes de que el stepper pueda cambiarlo
+        input.addEventListener('mousedown', () => {
+            field.lastValue = input.value;
+        });
+
+        // Escuchar el evento 'input', que se dispara con los clics del stepper
+        input.addEventListener('input', () => {
+            // Prevenir bucles si ya estamos procesando este input
+            if (this.processingInput.has(input.id)) {
+                return;
+            }
+
+            const oldValue = parseFloat(field.lastValue) || 0;
+            const newValue = parseFloat(input.value) || 0;
+            const diff = newValue - oldValue;
+
+            // Si el cambio fue exactamente +1 o -1 y la unidad es 'cm', es un clic en el stepper
+            if (this.getCurrentUnit() === 'cm' && (diff === 1 || diff === -1)) {
+                let correctedValue;
+                if (diff === 1) {
+                    // Incrementar 0.1 cm
+                    correctedValue = oldValue + 0.1;
+                } else {
+                    // Decrementar 0.1 cm
+                    correctedValue = oldValue - 0.1;
+                }
+
+                // Aplicar corrección
+                const finalValue = Math.max(0, Math.round(correctedValue * 10) / 10);
+                input.value = finalValue;
+
+                // Actualizar el valor guardado para el próximo evento
+                field.lastValue = finalValue.toString();
+
+                // Disparar evento de input debounced para notificar a otros módulos del cambio
+                this.debounceInputEvent(input);
+            } else {
+                // Si no es un clic de stepper, solo actualizar el último valor
+                field.lastValue = input.value;
             }
         });
-
-        // Observar cambios en el atributo value
-        observer.observe(input, {
-            attributes: true,
-            attributeFilter: ['value']
-        });
-
-        // También escuchar eventos de input para cambios programáticos
-        input.addEventListener('input', (e) => {
-            if (e.inputType === 'insertReplacementText' || !e.inputType) {
-                // Posible cambio por stepper nativo
-                this.handlePotentialStepperChange(input);
-            }
-        });
-    }
-
-    /**
-     * Maneja cambios potenciales por stepper nativo
-     */
-    handlePotentialStepperChange(input) {
-        // Prevenir bucles infinitos
-        if (this.processingInput.has(input.id)) {
-            return;
-        }
-        
-        // Si el cambio fue muy pequeño (1 unidad), podría ser un stepper
-        // Aplicar nuestra lógica personalizada
-        const currentUnit = this.getCurrentUnit();
-        if (currentUnit === 'cm') {
-            // Usar debounce para evitar múltiples disparos
-            this.debounceInputEvent(input);
-        }
-    }
-
-    /**
-     * Maneja cambios detectados en steppers nativos
-     */
-    handleNativeStepperChange(input, oldValue, newValue) {
-        // Prevenir bucles infinitos
-        if (this.processingInput.has(input.id)) {
-            return;
-        }
-        
-        const oldNum = parseFloat(oldValue) || 0;
-        const newNum = parseFloat(newValue) || 0;
-        const diff = Math.abs(newNum - oldNum);
-        
-        // Si la diferencia es exactamente 1 y estamos en cm, podría ser stepper nativo
-        if (diff === 1 && this.getCurrentUnit() === 'cm') {
-            // Aplicar nuestra lógica: cambio de 0.1 cm en lugar de 1 cm
-            const correctedValue = newNum > oldNum ? oldNum + 0.1 : oldNum - 0.1;
-            input.value = Math.max(0, Math.round(correctedValue * 10) / 10);
-            
-            // Usar debounce para disparar evento
-            this.debounceInputEvent(input);
-        }
     }
 
     /**
