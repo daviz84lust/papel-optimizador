@@ -126,20 +126,20 @@ class StepperManager {
             if (this.getCurrentUnit() === 'cm' && (roundedDiff === 1 || roundedDiff === -1)) {
                 let correctedValue;
 
-                // --- CACHE BUSTING DIAGNOSTIC ---
-                // Using a weird increment (0.11) to see if this code is running.
-                const diagnosticIncrement = 11; // 0.11 cm
-
+                let correctedValue;
+                // Usar aritmética basada en enteros para evitar errores de punto flotante.
+                // Se convierte a décimas de cm, se opera y se vuelve a cm.
                 if (roundedDiff === 1) { // Incremento
-                    correctedValue = (Math.round(oldValue * 100) + diagnosticIncrement) / 100;
+                    correctedValue = (Math.round(oldValue * 10) + 1) / 10;
                 } else { // Decremento
-                    correctedValue = (Math.round(oldValue * 100) - diagnosticIncrement) / 100;
+                    correctedValue = (Math.round(oldValue * 10) - 1) / 10;
                 }
 
-                const finalValue = Math.max(0, correctedValue);
+                // El redondeo final aquí es una doble seguridad.
+                const finalValue = Math.max(0, Math.round(correctedValue * 10) / 10);
 
-                input.value = finalValue.toFixed(2); // Use toFixed(2) for 0.11
-                field.lastValue = finalValue.toFixed(2);
+                input.value = finalValue;
+                field.lastValue = finalValue.toString();
                 this.debounceInputEvent(input);
 
             } else {
