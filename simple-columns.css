@@ -1,0 +1,75 @@
+/* ========================================
+   SIMPLE-COLUMNS.CSS - Multi-columna para subsecciones específicas
+   Solo para "Definir la Pieza" y "Definir Pliego de Trabajo"
+   ======================================== */
+
+/* ===== MULTI-COLUMNA PARA SUBSECCIONES (768px - 1023px) ===== */
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+    
+    /* Crear un contenedor flex para las primeras dos subsecciones */
+    .two-column-container {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    
+    /* Cada subsección ocupa la mitad del ancho disponible */
+    .two-column-container fieldset {
+        flex: 1;
+        min-width: 0; /* Permite que flex funcione correctamente */
+        margin-bottom: 0; /* Eliminar margen inferior ya que está en el contenedor */
+    }
+    
+    /* Asegurar que los inputs se ajusten al nuevo ancho */
+    .two-column-container input,
+    .two-column-container select {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Mantener el botón de intercambio centrado */
+    .two-column-container .full-width {
+        width: 100%;
+    }
+    
+    /* MULTI-COLUMNA para contenido interno de "Ajustes Finos" */
+    #step3-fine-tune .collapsible-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        align-items: start;
+    }
+    
+    /* Columna 1: Sangrados */
+    .bleeds-column {
+        grid-column: 1;
+    }
+    
+    /* Columna 2: Espaciado + Opciones */
+    .spacing-and-options {
+        grid-column: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    /* Espaciado de subsecciones internas */
+    .spacing-section,
+    .options-section {
+        margin-bottom: 10px;
+    }
+    
+    /* Botón Sincronizar ocupa ancho completo */
+    #link-bleeds-btn {
+        grid-column: 1 / -1;
+        margin-top: 15px;
+    }
+}
+
+/* ===== TABLET AMPLIO (900px - 1023px) - Más espacio ===== */
+@media screen and (min-width: 900px) and (max-width: 1023px) {
+    .two-column-container {
+        gap: 25px;
+    }
+}

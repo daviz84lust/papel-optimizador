@@ -1,0 +1,255 @@
+/*
+    RESPONSIVE.CSS - Mobile & Tablet Overhaul
+    Implements the new responsive UI based on user requirements.
+*/
+
+/* === Base Variables === */
+:root {
+    --header-height: 55px;
+    --nav-height: 60px;
+    --touch-target-size: 44px;
+    --mobile-font-size: 16px;
+    --panel-transition: transform 0.3s ease-in-out;
+}
+
+/* === Desktop First: Hide Mobile Elements by Default === */
+#mobile-header, #mobile-nav {
+    display: none;
+}
+
+/* === 1. Mobile Phones (< 768px) === */
+@media (max-width: 767.98px) {
+    body {
+        overflow: hidden; /* Prevent body scroll */
+    }
+
+    #app-container {
+        grid-template-columns: 1fr;
+        height: 100vh;
+        padding-top: var(--header-height);
+        padding-bottom: var(--nav-height);
+        overflow: hidden;
+    }
+
+    /* --- Mobile Header --- */
+    #mobile-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--header-height);
+        background: var(--panel-bg);
+        border-bottom: 1px solid var(--border-color);
+        padding: 0 15px;
+        z-index: 1000;
+    }
+
+    #hamburger-menu {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        width: 30px;
+        height: 30px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    #hamburger-menu span {
+        width: 100%;
+        height: 3px;
+        background: var(--text-primary);
+        border-radius: 3px;
+        transition: all 0.3s ease-in-out;
+    }
+
+    #mobile-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    /* --- Assistant Panel (Slide-in Menu) --- */
+    #assistant-panel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 85%;
+        max-width: 320px;
+        height: 100%;
+        background: var(--panel-bg);
+        z-index: 1001;
+        transform: translateX(-100%);
+        transition: var(--panel-transition);
+        display: block; /* Override display:grid */
+        overflow-y: auto;
+        padding: 20px;
+        border-right: 1px solid var(--border-color);
+    }
+
+    #assistant-panel.is-open {
+        transform: translateX(0);
+        box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+    }
+
+    /* --- Main Content Area --- */
+    #live-canvas-container,
+    #results-panel {
+        display: none; /* Hide panels by default */
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    /* Show the active view */
+    #live-canvas-container.is-active,
+    #results-panel.is-active {
+        display: block;
+    }
+
+    #live-canvas-container.is-active {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* --- Bottom Navigation --- */
+    #mobile-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: var(--nav-height);
+        background: var(--panel-bg);
+        border-top: 1px solid var(--border-color);
+        z-index: 1000;
+    }
+
+    .mobile-nav-btn {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 5px 0;
+        font-size: 12px;
+        transition: color 0.2s ease;
+    }
+
+    .mobile-nav-btn.active {
+        color: var(--accent-color);
+    }
+
+    .mobile-nav-btn svg {
+        width: 24px;
+        height: 24px;
+        margin-bottom: 4px;
+    }
+
+    /* --- Mobile Form Styling --- */
+    #assistant-panel .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1rem;
+    }
+
+    #assistant-panel .form-group label {
+        margin-bottom: 8px;
+        font-size: var(--mobile-font-size);
+        font-weight: 500;
+    }
+
+    #assistant-panel input,
+    #assistant-panel select {
+        width: 100%;
+        min-height: var(--touch-target-size);
+        font-size: var(--mobile-font-size);
+    }
+}
+
+/* === 2. Tablets & Mobile Landscape (768px to 1024px) === */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+    #app-container {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        grid-template-rows: 1fr auto;
+        gap: 15px;
+        height: 100vh;
+        padding: 15px;
+    }
+
+    #mobile-header { display: none; } /* Hide mobile header */
+
+    #assistant-panel {
+        display: block; /* Ensure it's visible */
+        grid-row: 1 / -1; /* Span both rows */
+        position: relative; /* Reset fixed positioning */
+        transform: none !important; /* Reset transform */
+        overflow-y: auto;
+    }
+
+    #live-canvas-container {
+        display: flex; /* Ensure it's visible */
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    #results-panel {
+        display: block; /* Ensure it's visible */
+        grid-column: 2;
+        grid-row: 2;
+        max-height: 250px; /* Or as needed */
+        overflow-y: auto;
+    }
+
+    /* Tablet form styling (inherit from mobile) */
+    #assistant-panel .form-group {
+        flex-direction: column;
+    }
+    #assistant-panel .form-group label {
+        margin-bottom: 8px;
+    }
+}
+
+/* === 3. Desktop (> 1024px) === */
+@media (min-width: 1024px) {
+    /* All mobile/tablet styles are off, style.css takes over */
+    /* Explicitly hide mobile elements */
+    #mobile-header, #mobile-nav {
+        display: none !important;
+    }
+
+    /* Ensure desktop layout is correct */
+    #app-container {
+        display: grid;
+        grid-template-columns: 350px 1fr 300px;
+        gap: 20px;
+        height: 100vh;
+        padding: 20px;
+    }
+
+    #assistant-panel, #live-canvas-container, #results-panel {
+        display: block !important; /* Ensure panels are visible */
+        position: relative;
+        transform: none !important;
+        height: auto;
+        overflow-y: initial;
+    }
+
+    #assistant-panel .form-group {
+        display: grid; /* Revert to grid for side-by-side labels */
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+    }
+
+    #assistant-panel .form-group label {
+        margin-bottom: 0;
+    }
+}
+

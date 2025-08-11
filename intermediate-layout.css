@@ -1,0 +1,246 @@
+/* ========================================
+   INTERMEDIATE-LAYOUT.CSS - Layout Multi-Columna
+   Asistente de Imposición - Aprovechamiento Total del Espacio
+   ======================================== */
+
+/* ===== LAYOUT MULTI-COLUMNA SIMPLE (1024px - 1400px) ===== */
+@media screen and (min-width: 1024px) and (max-width: 1400px) {
+    
+    /* Expandir el panel izquierdo para aprovechar el espacio muerto */
+    #app-container {
+        grid-template-columns: 1fr 320px !important;
+        gap: 20px !important;
+    }
+    
+    /* Panel izquierdo con layout multi-columna para fieldsets */
+    #assistant-panel {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+        gap: 20px !important;
+        align-items: start !important;
+        max-width: none !important;
+        width: 100% !important;
+    }
+    
+    /* Cada fieldset ocupa una columna */
+    #assistant-panel fieldset {
+        width: 100% !important;
+        min-width: 300px !important;
+        margin-bottom: 0 !important;
+    }
+    
+    /* Canvas se mantiene en su posición original pero oculto en este layout */
+    #live-canvas-container {
+        display: none !important;
+    }
+    
+    /* Crear un nuevo contenedor para el canvas dentro del panel de resultados */
+    #results-panel {
+        display: flex !important;
+        flex-direction: column !important;
+        min-width: 320px !important;
+    }
+    
+    /* Agregar el canvas al panel de resultados */
+    #results-panel::after {
+        content: "" !important;
+        display: block !important;
+        width: 100% !important;
+        height: 200px !important;
+        background: var(--bg-secondary) !important;
+        border-radius: 8px !important;
+        margin-top: 15px !important;
+        border: 1px dashed var(--border-color) !important;
+    }
+    
+    /* Layout de 2 columnas para inputs cuando hay espacio */
+    #assistant-panel .form-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    
+    #assistant-panel .form-group label {
+        min-width: 140px;
+        margin-bottom: 0;
+        font-size: 0.9rem;
+    }
+    
+    #assistant-panel .form-group input,
+    #assistant-panel .form-group select {
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    /* Organizar inputs de dimensiones en grid 2x2 */
+    .piece-dimensions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    /* Crear grid para cortes */
+    .cuts-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    /* Grid para sangrados más compacto */
+    .bleed-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+    
+    /* Grid para espaciado */
+    .spacing-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    
+    /* Botones más compactos */
+    #assistant-panel button {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .full-width {
+        grid-column: 1 / -1;
+    }
+    
+    /* Fieldsets más compactos */
+    #assistant-panel fieldset {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    #assistant-panel fieldset h3 {
+        font-size: 1rem;
+        margin-bottom: 15px;
+    }
+    
+    #assistant-panel fieldset h4 {
+        font-size: 0.95rem;
+        margin: 12px 0 10px 0;
+        padding-top: 12px;
+    }
+    
+    /* Optimizar panel derecho */
+    #results-panel {
+        min-width: 300px !important;
+        max-width: 300px !important;
+    }
+    
+    #results-panel .stat-card {
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    
+    #results-panel .stat-card h1 {
+        font-size: 1.8rem;
+    }
+    
+    #results-panel .action-buttons {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    
+    #results-panel button {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+    
+    /* Canvas central optimizado */
+    #live-canvas-container {
+        padding: 15px;
+    }
+    
+    #sheet-info-display {
+        font-size: 0.9rem;
+    }
+    
+    /* Hacer colapsable la sección de ajustes finos por defecto en este rango */
+    #step3-fine-tune .collapsible-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    #step3-fine-tune.expanded .collapsible-content {
+        max-height: 400px;
+    }
+    
+    .collapsible-trigger {
+        cursor: pointer;
+        user-select: none;
+        padding: 8px;
+        background: var(--bg-tertiary);
+        border-radius: 4px;
+        margin-bottom: 8px;
+        transition: background-color var(--transition-speed);
+    }
+    
+    .collapsible-trigger:hover {
+        background: var(--bg-secondary);
+    }
+    
+    .collapsible-trigger::after {
+        content: " ▼";
+        float: right;
+        transition: transform 0.3s ease;
+    }
+    
+    #step3-fine-tune.expanded .collapsible-trigger::after {
+        transform: rotate(180deg);
+    }
+}
+
+/* ===== DESKTOP AMPLIO (1200px+) ===== */
+@media screen and (min-width: 1200px) {
+    /* Restaurar layout original para pantallas amplias */
+    #app-container {
+        grid-template-columns: 360px 1fr 320px !important;
+        gap: 20px !important;
+    }
+    
+    #assistant-panel {
+        min-width: 360px !important;
+        max-width: 360px !important;
+    }
+    
+    #results-panel {
+        min-width: 320px !important;
+        max-width: 320px !important;
+    }
+    
+    /* Restaurar layout vertical de formularios */
+    #assistant-panel .form-group {
+        display: block;
+        margin-bottom: 15px;
+    }
+    
+    #assistant-panel .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        min-width: auto;
+    }
+    
+    /* Desactivar grids compactos */
+    .piece-dimensions,
+    .cuts-grid,
+    .spacing-inputs {
+        display: block;
+    }
+    
+    .bleed-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+}

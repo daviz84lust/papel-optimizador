@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PapelOptimizador</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="simple-columns.css">
+        <link rel="stylesheet" href="units-selector.css">
+    <link rel="stylesheet" href="responsive.css">
+</head>
+<body>
+    <header id="mobile-header">
+        <button id="hamburger-menu" aria-label="Toggle Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <h1 id="mobile-title">PapelOptimizador</h1>
+    </header>
+
+    <div id="app-container">
+        <!-- Left Column - Assistant Panel -->
+        <aside id="assistant-panel">
+            <header class="panel-header">
+                <h2>Asistente de Imposición</h2>
+                <button id="theme-toggle">🌙</button>
+            </header>
+
+            <div class="two-column-container">
+                <fieldset>
+                    <h3>1. Definir la Pieza</h3>
+                    <div class="form-group">
+                        <label for="pieceWidth">Ancho de la pieza (mm):</label>
+                        <input type="number" id="pieceWidth" placeholder="e.g., 10" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="pieceHeight">Alto de la pieza (mm):</label>
+                        <input type="number" id="pieceHeight" placeholder="e.g., 5" value="5">
+                    </div>
+                    <button id="swap-dimensions-btn" class="secondary-btn full-width">Intercambiar Ancho/Alto</button>
+                </fieldset>
+
+                <fieldset>
+                    <h3>2. Definir Pliego de Trabajo</h3>
+                <div class="form-group">
+                    <label for="paper-select">Papel Original:</label>
+                    <select id="paper-select">
+                        <option value="1020,720">102 x 72 cm</option>
+                        <option value="1000,700">100 x 70 cm</option>
+                        <option value="890,690">89 x 69 cm</option>
+                        <option value="860,610" selected>86 x 61 cm</option>
+                        <option value="480,330">48 x 33 cm</option>
+                        <option value="custom">-- Usar Tamaño Personalizado --</option>
+                    </select>
+                </div>
+                
+                <div id="custom-paper-inputs" class="hidden">
+                    <div class="form-group">
+                        <label for="customPaperWidth">Ancho personalizado (mm):</label>
+                        <input type="number" id="customPaperWidth" placeholder="e.g., 1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="customPaperHeight">Alto personalizado (mm):</label>
+                        <input type="number" id="customPaperHeight" placeholder="e.g., 700">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cut-type-select">Tipo de Corte:</label>
+                    <select id="cut-type-select">
+                        <option value="2,1">2 de hoja</option>
+                        <option value="3,1">3 de hoja</option>
+                        <option value="2,2">4 de hoja</option>
+                        <option value="6,1">6 de hoja</option>
+                        <option value="custom" disabled hidden>-- Personalizado --</option>
+                    </select>
+                </div>
+
+                <div class="manual-cuts">
+                    <div class="form-group">
+                        <label for="cuts_x">Cortes a lo Ancho:</label>
+                        <input type="number" id="cuts_x" min="1" value="2">
+                    </div>
+                    <div class="form-group">
+                        <label for="cuts_y">Cortes a lo Alto:</label>
+                        <input type="number" id="cuts_y" min="1" value="1">
+                    </div>
+                    <button id="swap-cuts-btn" class="secondary-btn full-width">↔ Intercambiar Cortes</button>
+                </div>
+                
+                <canvas id="cut-preview-canvas" width="320" height="160"></canvas>
+                </fieldset>
+            </div>
+
+            <fieldset id="step3-fine-tune" class="collapsible">
+                <h3 class="collapsible-trigger">3. Ajustes Finos (Opcional) ▼</h3>
+                <div class="collapsible-content">
+                    <!-- Columna 1: Sangrados -->
+                    <div class="bleeds-column">
+                        <h4>Sangrados</h4>
+                        <div class="bleed-grid">
+                            <div class="form-group"><label for="bleedTop">Superior:</label><input type="number" id="bleedTop" value="0"></div>
+                            <div class="form-group"><label for="bleedBottom">Inferior:</label><input type="number" id="bleedBottom" value="0"></div>
+                            <div class="form-group"><label for="bleedLeft">Izquierdo:</label><input type="number" id="bleedLeft" value="0"></div>
+                            <div class="form-group"><label for="bleedRight">Derecho:</label><input type="number" id="bleedRight" value="0"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Columna 2: Espaciado + Opciones -->
+                    <div class="spacing-and-options">
+                        <div class="spacing-section">
+                            <h4>Espaciado</h4>
+                            <div class="spacing-inputs">
+                                <div class="form-group"><label for="gripper">Pinza (mm):</label><input type="number" id="gripper" value="1"></div>
+                                <div class="form-group"><label for="horizontal_gutter">Separación H. (mm):</label><input type="number" id="horizontal_gutter" value="0"></div>
+                                <div class="form-group"><label for="vertical_gutter">Separación V. (mm):</label><input type="number" id="vertical_gutter" value="0"></div>
+                                <div class="form-group"><label for="center_horizontal_gutter">Separación Centro H. (mm):</label><input type="number" id="center_horizontal_gutter" value="0"></div>
+                                <div class="form-group"><label for="center_vertical_gutter">Separación Centro V. (mm):</label><input type="number" id="center_vertical_gutter" value="0"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="options-section">
+                            <h4>Opciones</h4>
+                            <div class="options"><input type="checkbox" id="centerHorizontally" checked><label for="centerHorizontally">Centrado Horizontal</label></div>
+                            <div class="options"><input type="checkbox" id="priorityWidth" checked><label for="priorityWidth">Prioridad al Ancho</label></div>
+                            <div class="options"><input type="checkbox" id="useGripperOnBleedMode"><label for="useGripperOnBleedMode">Optimizar con pinza sobre sangrado</label></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botón Sincronizar ocupa ancho completo -->
+                    <button id="link-bleeds-btn" class="secondary-btn full-width">🔗 Sincronizar</button>
+                </div>
+            </fieldset>
+        </aside>
+
+        <main id="live-canvas-container" data-view="grid">
+            <svg id="live-canvas"></svg>
+            <p id="sheet-info-display">Pliego de Trabajo: 0 × 0 mm</p>
+        </main>
+        
+        <aside id="results-panel" data-view="results">
+            <header class="panel-header">
+                <h2>Resultados Clave</h2>
+            </header>
+            <div class="stat-card">
+                <p>Uso del Material</p>
+                <h1 id="utilization-display">0%</h1>
+                <em>Del área de cada pliego es producto útil.</em>
+            </div>
+            <div class="stat-card">
+                <p>Piezas por Pliego</p>
+                <h1 id="units-display">0</h1>
+                <em id="units-breakdown">(0 a lo ancho × 0 a lo alto)</em>
+            </div>
+            <div class="stat-card">
+                <p>Espacio Sobrante en Pliego</p>
+                <div class="margin-display">
+                    <!-- JavaScript will populate this dynamically -->
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button id="calculate-btn" class="primary-btn">Calcular / Refrescar</button>
+                <button id="job-info-btn" class="info-btn" title="Agregar/Editar información del trabajo">
+                    <span id="job-info-icon">📋</span> <span id="job-info-text">Info del Trabajo</span>
+                </button>
+                <button id="analyze-btn" class="secondary-btn">Analizar Opciones</button>
+                <button id="pdf-btn" class="secondary-btn">Generar Ficha PDF</button>
+                <button id="svg-btn" class="secondary-btn">Exportar Layout SVG</button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Modal para Información del Trabajo -->
+    <div id="job-info-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Información del Trabajo</h3>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="job-info-form">
+                    <div class="form-group">
+                        <label for="job-title">Título del Trabajo:</label>
+                        <input type="text" id="job-title" placeholder="Ej: Catálogo Primavera 2024">
+                        <small class="form-hint">Si se deja vacío, se usará "sin_titulo"</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="job-client">Cliente:</label>
+                        <input type="text" id="job-client" placeholder="Ej: Empresa XYZ S.A.">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="job-quote">Número de Cotización:</label>
+                        <input type="text" id="job-quote" placeholder="Ej: COT-2024-001">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="job-date">Fecha:</label>
+                        <input type="date" id="job-date">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="job-notes">Notas Adicionales:</label>
+                        <textarea id="job-notes" rows="3" placeholder="Observaciones especiales, instrucciones, etc."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="secondary-btn" id="job-info-cancel">Cancelar</button>
+                <button type="button" class="primary-btn" id="job-info-save">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="units-manager.js"></script>
+    <script src="stepper-manager.js"></script>
+    <script src="engine.js"></script>
+    <script src="layout-viewer.js"></script>
+    <script src="pdf-generator.js"></script>
+    <script src="app.js"></script>
+    <script src="units-integration.js"></script>
+    <script src="mobile-ux.js"></script>
+
+    <nav id="mobile-nav">
+        <button data-view-target="grid" class="mobile-nav-btn active" aria-label="Show Grid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M3 3h18v18H3V3zm2 2v14h14V5H5z"/></svg>
+            <span>Grid</span>
+        </button>
+        <button data-view-target="results" class="mobile-nav-btn" aria-label="Show Results">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M9 21H5V9h4v12zm5-12H9v12h5V9zm5-4h-4v16h4V5z"/></svg>
+            <span>Resultados</span>
+        </button>
+    </nav>
+</body>
+</html>
