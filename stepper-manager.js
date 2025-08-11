@@ -59,7 +59,6 @@ class StepperManager {
      */
     setupFieldStepper(field) {
         const input = field.element;
-        field.lastValue = input.value; // Almacenar valor inicial
 
         // Remover step attribute si existe para tomar control completo
         input.removeAttribute('step');
@@ -87,16 +86,10 @@ class StepperManager {
             }
         });
 
-        // Interceptar clics en los controles nativos del navegador
-        this.interceptNativeSteppers(input, field);
+        // Interceptar clics en los controles nativos del navegador (si existen)
+        this.interceptNativeSteppers(input);
     }
 
-    /**
-     * Intercepta los clics en los steppers nativos del navegador.
-     * La estrategia es guardar el valor en 'mousedown' y compararlo en 'input'.
-     * Si el cambio es de +/- 1 (contemplando errores de punto flotante),
-     * se asume que fue un clic en el stepper y se aplica la lógica personalizada.
-     */
     interceptNativeSteppers(input, field) {
         // Guardar el valor justo antes de que el stepper pueda cambiarlo
         input.addEventListener('mousedown', () => {
@@ -116,49 +109,40 @@ class StepperManager {
                 return;
             }
 
-            // Lista de inputTypes que indican tipeo manual.
             const typingInputTypes = [
-                'insertText',
-                'deleteContentBackward',
-                'deleteContentForward',
-                'insertFromPaste'
+                'insertText', 'deleteContentBackward', 'deleteContentForward', 'insertFromPaste'
             ];
 
-            // Si el evento fue por tipeo, no aplicar la lógica de corrección del stepper.
             if (typingInputTypes.includes(e.inputType)) {
                 field.lastValue = input.value;
                 return;
             }
 
-            // Si el inputType no es de tipeo (p.ej. undefined, insertReplacementText),
-            // proceder con la lógica de corrección para el stepper.
             const oldValue = parseFloat(field.lastValue) || 0;
             const newValue = parseFloat(input.value) || 0;
             const diff = newValue - oldValue;
-
             const roundedDiff = Math.round(diff);
 
             if (this.getCurrentUnit() === 'cm' && (roundedDiff === 1 || roundedDiff === -1)) {
-                // --- DIAGNOSTIC TEST ---
-                // Stop other event listeners from running to test for conflicts.
-                e.stopPropagation();
-
                 let correctedValue;
-                // Usar aritmética basada en enteros para evitar errores de punto flotante.
+
+                // --- CACHE BUSTING DIAGNOSTIC ---
+                // Using a weird increment (0.11) to see if this code is running.
+                const diagnosticIncrement = 11; // 0.11 cm
+
                 if (roundedDiff === 1) { // Incremento
-                    correctedValue = (Math.round(oldValue * 10) + 1) / 10;
+                    correctedValue = (Math.round(oldValue * 100) + diagnosticIncrement) / 100;
                 } else { // Decremento
-                    correctedValue = (Math.round(oldValue * 10) - 1) / 10;
+                    correctedValue = (Math.round(oldValue * 100) - diagnosticIncrement) / 100;
                 }
 
-                const finalValue = Math.max(0, Math.round(correctedValue * 10) / 10);
+                const finalValue = Math.max(0, correctedValue);
 
-                input.value = finalValue;
-                field.lastValue = finalValue.toString();
-                // Do not call debounceInputEvent during the test to avoid further complications.
+                input.value = finalValue.toFixed(2); // Use toFixed(2) for 0.11
+                field.lastValue = finalValue.toFixed(2);
+                this.debounceInputEvent(input);
 
             } else {
-                // Para otros casos (p.ej. el campo se vacía), actualizar el valor.
                 field.lastValue = input.value;
             }
         });
